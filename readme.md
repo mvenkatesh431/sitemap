@@ -3,7 +3,7 @@ This Go Module will generate the sitemap for any given URL.
 We will travese the all pages of the website and creates the sitemap
 
 We will use the
-- 'http/net' module to get the webpage
+- 'net/http' module to get the webpage
 - 'https://github.com/mvenkatesh431/LinkParser' to parse the links on a WebPage
 
 We will filter out the links(Ignoring the fragments and links to other sites, etc) and create the sitemap.
