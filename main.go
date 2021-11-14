@@ -4,24 +4,26 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/mvenkatesh431/LinkParser/link"
 )
 
+type emptyStruct struct{}
+
 func main() {
 
 	urlVar := flag.String("url", "http://www.pybuzz.com/", "Website URL to create the Sitemap")
+	maxDepth := flag.Int("depth", 5, "The Max number of pages you can Traverse")
 	flag.Parse()
+	_ = maxDepth
 
-	siteLinks, err := get(*urlVar)
-	if err != nil {
-		log.Fatalf("Failed to get the links %v\n", err)
+	siteLinks := parseLinks(*urlVar, *maxDepth)
+
+	for _, link := range siteLinks {
+		fmt.Println(link)
 	}
-
-	fmt.Println(siteLinks)
 }
 
 /*
@@ -73,4 +75,61 @@ func getHrefs(reader io.Reader, baseUrl string) ([]string, error) {
 		}
 	}
 	return siteLinks, nil
+}
+
+/*
+	The 'parseLinks' will do the breadth first parseLinks and goes to all the pages
+	'urlVar' is the url given by user
+	'parseLinks' returns the slices of string - which contains all the links in the website
+*/
+func parseLinks(urlVar string, maxDepth int) []string {
+
+	var result []string
+
+	// We don't need to go through the pages we already seen. So maintain a map and check before parsing
+	// Our 'seen' map contains the string and empty struct. The key will be the 'links'
+	// The empty struct 'struct{}' won't assign any memory, But you can also use 'bool' type.
+	// lets define emptyStruct type and use it.
+	seen := make(map[string]emptyStruct)
+
+	// We need two maps, One will contain the links we are going through now.
+	// Other will contian the links we found in this iteration
+	var present map[string]emptyStruct
+	future := map[string]emptyStruct{
+		urlVar: emptyStruct{}, // add the 'urlVar'(our base link) to 'future' map.
+	}
+
+	// Lets iterate upto 'MaxDepth'
+	for i := 0; i <= maxDepth; i++ {
+
+		// copy 'future' to 'present' and make 'future' empty
+		present, future = future, make(map[string]emptyStruct)
+
+		for page, _ := range present {
+			// if the 'page' exists in the 'seen', Then we already went to through page, So 'continue'
+			if _, ok := seen[page]; ok {
+				continue
+			}
+			seen[page] = emptyStruct{}
+
+			links, err := get(page)
+			if err != nil {
+				// If we failed to get a 'page', Then continue.
+				continue
+			}
+
+			// Now call the 'get' to parse all links
+			for _, link := range links {
+				// Add the 'link' to 'future' map, So that we can visit them later
+				future[link] = emptyStruct{}
+			}
+		}
+	}
+
+	// We need to return the slice of strings, so populate the 'result' and return
+	for url, _ := range seen {
+		result = append(result, url)
+	}
+
+	return result
 }
