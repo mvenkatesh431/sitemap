@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/xml"
 	"flag"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/mvenkatesh431/LinkParser/link"
@@ -12,18 +14,52 @@ import (
 
 type emptyStruct struct{}
 
+const xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
+type loc struct {
+	Value string `xml:"loc"`
+}
+
+type urlset struct {
+	Urls  []loc  `xml:"url"`
+	Xmlns string `xml:"xmlns,attr"`
+}
+
 func main() {
 
 	urlVar := flag.String("url", "http://www.pybuzz.com/", "Website URL to create the Sitemap")
-	maxDepth := flag.Int("depth", 5, "The Max number of pages you can Traverse")
+	maxDepth := flag.Int("depth", 5, "The Max depth of pages you can Traverse")
+	outFile := flag.String("outFile", "sitemap.xml", "Sitemap will be saved this file")
 	flag.Parse()
-	_ = maxDepth
 
+	// The 'parseLinks' will do the breadth first parseLinks and goes to all the pages
 	siteLinks := parseLinks(*urlVar, *maxDepth)
 
-	for _, link := range siteLinks {
-		fmt.Println(link)
+	encXml := urlset{
+		Xmlns: xmlns,
 	}
+
+	for _, link := range siteLinks {
+		encXml.Urls = append(encXml.Urls, loc{link})
+	}
+
+	// Open file for writing and truncate if there is data
+	f, err := os.OpenFile(*outFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		log.Fatalf("Failed to open the OutFile %s \n", err)
+	}
+	defer f.Close()
+
+	f.WriteString(xml.Header)
+	encoder := xml.NewEncoder(f)
+
+	// will have two spaces as indentation
+	encoder.Indent("", "  ")
+	if err := encoder.Encode(encXml); err != nil {
+		log.Fatalf("Failed to encode the XML %v\n", err)
+	}
+
+	log.Printf("Sitemap for '%s' is written to '%s' successfully \n", *urlVar, *outFile)
 }
 
 /*
@@ -105,6 +141,11 @@ func parseLinks(urlVar string, maxDepth int) []string {
 		// copy 'future' to 'present' and make 'future' empty
 		present, future = future, make(map[string]emptyStruct)
 
+		// if the 'present' map is empty, Means we reached end. So break it.
+		if len(present) == 0 {
+			break
+		}
+
 		for page, _ := range present {
 			// if the 'page' exists in the 'seen', Then we already went to through page, So 'continue'
 			if _, ok := seen[page]; ok {
@@ -121,7 +162,10 @@ func parseLinks(urlVar string, maxDepth int) []string {
 			// Now call the 'get' to parse all links
 			for _, link := range links {
 				// Add the 'link' to 'future' map, So that we can visit them later
-				future[link] = emptyStruct{}
+				if _, ok := seen[link]; !ok {
+					// only add the links which are not present in 'seen' map
+					future[link] = emptyStruct{}
+				}
 			}
 		}
 	}

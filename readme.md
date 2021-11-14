@@ -24,3 +24,25 @@ We will generate the XML format as per the standard sitemap protocol
   </url>
 </urlset>
 ```
+
+### Sample Output:
+
+**Usage:**
+
+```
+> go run main.go -h
+Usage of C:\Users\mvenk\AppData\Local\Temp\go-build1601473586\b001\exe\main.exe:
+  -depth int
+        The Max depth of pages you can Traverse (default 5)
+  -outFile string
+        Sitemap will be saved this file (default "sitemap.xml")
+  -url string
+        Website URL to create the Sitemap (default "http://www.pybuzz.com/")
+>
+
+
+> go run main.go -depth=3 -outFile="go-map.xml" -url="https://example.com/"
+2021/11/14 18:41:25 Sitemap for 'https://example.com/' is written to 'go-map.xml' successfully 
+>
+
+ ```
