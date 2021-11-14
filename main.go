@@ -34,7 +34,14 @@ func main() {
 
 	// The 'parseLinks' will do the breadth first parseLinks and goes to all the pages
 	siteLinks := parseLinks(*urlVar, *maxDepth)
+	err := xmlSitemap(siteLinks, *outFile)
+	if err != nil {
+		log.Fatalf("Failed to create the XML Sitemap %v\n", err)
+	}
+	log.Printf("Sitemap for '%s' is written to '%s' successfully \n", *urlVar, *outFile)
+}
 
+func xmlSitemap(siteLinks []string, outFile string) error {
 	encXml := urlset{
 		Xmlns: xmlns,
 	}
@@ -44,9 +51,9 @@ func main() {
 	}
 
 	// Open file for writing and truncate if there is data
-	f, err := os.OpenFile(*outFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	f, err := os.OpenFile(outFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		log.Fatalf("Failed to open the OutFile %s \n", err)
+		return err
 	}
 	defer f.Close()
 
@@ -56,10 +63,9 @@ func main() {
 	// will have two spaces as indentation
 	encoder.Indent("", "  ")
 	if err := encoder.Encode(encXml); err != nil {
-		log.Fatalf("Failed to encode the XML %v\n", err)
+		return err
 	}
-
-	log.Printf("Sitemap for '%s' is written to '%s' successfully \n", *urlVar, *outFile)
+	return nil
 }
 
 /*
