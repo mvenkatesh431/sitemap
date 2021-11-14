@@ -6,10 +6,12 @@ We will use the
 - 'net/http' module to get the webpage
 - 'https://github.com/mvenkatesh431/LinkParser' to parse the links on a WebPage
 
-We will filter out the links(Ignoring the fragments and links to other sites, etc) and create the sitemap.
+We will filter out the links(Ignoring the fragments and links to other sites, etc) and use the BFS to traverse through the pages to get all links.
 
 Note: This is my version of one of the excersices of *gophercise*
 
+
+Then we will generate the XML sitemap using above links. 
 We will generate the XML format as per the standard sitemap protocol
 ```
 <?xml version="1.0" encoding="UTF-8"?>
