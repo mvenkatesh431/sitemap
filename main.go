@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/mvenkatesh431/sitemap"
+	"github.com/mvenkatesh431/sitemap/sitemap"
 )
 
 func main() {
