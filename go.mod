@@ -1,4 +1,4 @@
-module sitemap
+module github.com/mvenkatesh431/sitemap
 
 go 1.17
 
