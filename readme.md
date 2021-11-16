@@ -25,7 +25,7 @@ We will generate the XML format as per the standard sitemap protocol
 </urlset>
 ```
 
-### Sample Output:
+### Sample Outputs:
 
 **Usage:**
 
@@ -40,12 +40,16 @@ Usage of C:\Users\mvenk\AppData\Local\Temp\go-build1601473586\b001\exe\main.exe:
         Website URL to create the Sitemap (default "http://www.pybuzz.com/")
 >
 
+ ```
 
+ You can pass the site you want to create the sitemap
+ ```
 > go run main.go -depth=3 -outFile="go-map.xml" -url="https://example.com/"
 2021/11/14 18:41:25 Sitemap for 'https://example.com/' is written to 'go-map.xml' successfully 
 >
-
  ```
+
+ Please have a look at the `main.go` for a working example.
 
  **Example:**
 Generated sitemap.xml from above library
